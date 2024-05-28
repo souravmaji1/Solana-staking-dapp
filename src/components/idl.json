@@ -1,0 +1,151 @@
+{
+    "version": "0.1.0",
+    "name": "staker",
+    "instructions": [
+        {
+            "name": "createMysplAta",
+            "accounts": [
+                {
+                    "name": "mysplAtaForProgram",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "mysplMint",
+                    "isMut": false,
+                    "isSigner": false
+                },
+                {
+                    "name": "payer",
+                    "isMut": true,
+                    "isSigner": true
+                },
+                {
+                    "name": "systemProgram",
+                    "isMut": false,
+                    "isSigner": false
+                },
+                {
+                    "name": "tokenProgram",
+                    "isMut": false,
+                    "isSigner": false
+                },
+                {
+                    "name": "rent",
+                    "isMut": false,
+                    "isSigner": false
+                }
+            ],
+            "args": []
+        },
+        {
+            "name": "stake",
+            "accounts": [
+                {
+                    "name": "tokenProgram",
+                    "isMut": false,
+                    "isSigner": false
+                },
+                {
+                    "name": "rewardAtaForUser",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "authorityOfRewardMint",
+                    "isMut": false,
+                    "isSigner": false
+                },
+                {
+                    "name": "rewardMint",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "mysplAtaForUser",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "authorityOfMysplAtaForUser",
+                    "isMut": false,
+                    "isSigner": true
+                },
+                {
+                    "name": "mysplAtaForProgram",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "mysplMint",
+                    "isMut": false,
+                    "isSigner": false
+                }
+            ],
+            "args": [
+                {
+                    "name": "authorityOfRewardMintBump",
+                    "type": "u8"
+                },
+                {
+                    "name": "mysplAtaForProgramBump",
+                    "type": "u8"
+                },
+                {
+                    "name": "mysplAmount",
+                    "type": "u64"
+                }
+            ]
+        },
+        {
+            "name": "unstake",
+            "accounts": [
+                {
+                    "name": "tokenProgram",
+                    "isMut": false,
+                    "isSigner": false
+                },
+                {
+                    "name": "rewardAtaForUser",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "authorityOfRewardAtaForUser",
+                    "isMut": false,
+                    "isSigner": true
+                },
+                {
+                    "name": "rewardMint",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "mysplAtaForProgram",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "mysplAtaForUser",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "mysplMint",
+                    "isMut": false,
+                    "isSigner": false
+                }
+            ],
+            "args": [
+                {
+                    "name": "mysplAtaForProgramBump",
+                    "type": "u8"
+                },
+                {
+                    "name": "rewardAmount",
+                    "type": "u64"
+                }
+            ]
+        }
+    ]
+}

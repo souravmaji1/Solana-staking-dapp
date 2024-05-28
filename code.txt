@@ -1,0 +1,85 @@
+import { useConnection, useWallet } from '@solana/wallet-adapter-react';
+import { Program, AnchorProvider, web3 } from '@project-serum/anchor';
+import idl from './idl.json'; // Your program's IDL
+import { FC, useCallback } from 'react';
+import { notify } from "../utils/notifications";
+import { PublicKey, ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID } from '@solana/web3.js';
+
+const programID = new web3.PublicKey('2iB1Yf6i2yv8bqiab8TcAfQ2rtVmnQ96n6jaYy1ZZ4BG');
+const REWARD_MINT_ADDRESS = new web3.PublicKey('5yCiYccC6xiv7s4yPHo4ESgHjBsXh1ySuwZr9Z1oL5v7');
+const MYSPL_MINT_ADDRESS = new web3.PublicKey('6oban7Xk5hk58NngWWyajhM9pQZej2akxUBSkAKwGJPF');
+
+const getMysplAtaForProgramPDA = async (programId, mysplMintAddress) => {
+  const [mysplAtaForProgramPDA, bump] = await PublicKey.findProgramAddress(
+    [mysplMintAddress.toBuffer()],
+    programId
+  );
+
+  return {
+    mysplAtaForProgramPDA,
+    bump,
+  };
+};
+
+const getAuthorityOfRewardMintPDA = async (rewardMintAddress, authorityOfRewardMintBump) => {
+  const [authorityOfRewardMintPDA, _] = await PublicKey.findProgramAddress(
+    [rewardMintAddress.toBuffer(), Buffer.from([authorityOfRewardMintBump])],
+    programID
+  );
+
+  return authorityOfRewardMintPDA;
+};
+
+export const StakeTransaction: FC = () => {
+  const { connection } = useConnection();
+  const { publicKey, sendTransaction } = useWallet();
+
+  const onClick = useCallback(async () => {
+    if (!publicKey) {
+      notify({ type: 'error', message: `Wallet not connected!` });
+      console.log('error', `Stake Transaction: Wallet not connected!`);
+      return;
+    }
+
+    try {
+      const provider = new AnchorProvider(connection, window.solana, { preflightCommitment: "processed" });
+      const program = new Program(idl, programID, provider);
+
+      const authorityOfRewardMintBump = 256; // Replace with the correct bump value
+      const { mysplAtaForProgramPDA, bump } = await getMysplAtaForProgramPDA(programID, MYSPL_MINT_ADDRESS);
+      const authorityOfRewardMintPDA = await getAuthorityOfRewardMintPDA(REWARD_MINT_ADDRESS, authorityOfRewardMintBump);
+      const mysplAmount = new web3.BN(1_000_000); // Amount of MYSPL to stake
+
+      const tx = await program.methods
+        .stake(authorityOfRewardMintBump, bump, mysplAmount)
+        .accounts({
+          rewardAtaForUser: await findAssociatedTokenAddress(REWARD_MINT_ADDRESS, publicKey),
+          authorityOfRewardMint: authorityOfRewardMintPDA,
+          mysplAtaForUser: await findAssociatedTokenAddress(MYSPL_MINT_ADDRESS, publicKey),
+          authorityOfMysplAtaForUser: publicKey,
+          mysplAtaForProgram: mysplAtaForProgramPDA,
+          mysplMint: MYSPL_MINT_ADDRESS,
+          rewardMint: REWARD_MINT_ADDRESS,
+          tokenProgram: TOKEN_PROGRAM_ID,
+        })
+        .signers([])
+        .rpc();
+
+      console.log("Stake Transaction Successful", tx);
+      notify({ type: 'success', message: 'Stake Transaction Successful!', txid: tx });
+    } catch (error: any) {
+      notify({ type: 'error', message: `Stake Transaction failed!`, description: error?.message });
+      console.log('error', `Stake Transaction failed! ${error?.message}`);
+    }
+  }, [publicKey, notify, connection]);
+
+  // ... (render component)
+};
+
+// Helper function to find the Associated Token Account address
+const findAssociatedTokenAddress = async (mintAddress: web3.PublicKey, walletAddress: web3.PublicKey) => {
+  return (await web3.PublicKey.findProgramAddress(
+    [walletAddress.toBuffer(), TOKEN_PROGRAM_ID.toBuffer(), mintAddress.toBuffer()],
+    ASSOCIATED_TOKEN_PROGRAM_ID
+  ))[0];
+};
